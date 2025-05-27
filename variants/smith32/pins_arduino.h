@@ -1,1 +1,11 @@
-#define A0 0
+#define PWM_L 2
+#define EN_L 4
+#define SDA 5
+#define SCL 6
+#define IN_1_L 12
+#define IN_2_L 13
+#define PWM_R 14
+#define EN_R 17
+#define IN1_R 18
+#define IN2_R 21
+#define LED_RED 36
