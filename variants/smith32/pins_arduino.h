@@ -7,3 +7,7 @@
 #define IN1_R 17
 #define IN2_R 18
 #define LED_RED 36
+#define SCK 
+#define MISO
+#define MOSI
+#define SS

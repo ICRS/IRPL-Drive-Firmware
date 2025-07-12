@@ -1,5 +1,5 @@
 #include <task.h>
-
+#include <Wire.h>
 
 void setup(){
 
@@ -25,7 +25,18 @@ void setup(){
       );
     #endif
 
-    
+    #if ENABLE_CURRENT == true
+    xTaskCreate(
+        currentTask,    // Function that should be called
+        "Current Sensing",   // Name of the task (for debugging)
+        8192 ,            // Stack size (bytes)
+        NULL,            // Parameter to pass
+        1,               // Task priority
+        &currentTaskHandle             // Task handle
+      );
+    #endif
+
+    Wire.begin(SDA, SCL,20000);
 }
 
 void loop(){

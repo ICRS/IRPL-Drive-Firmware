@@ -7,11 +7,13 @@
 
 void samsCerealTask(void * parameter);
 void motorTask(void * parameter);
+void currentTask(void * parameter);
 
 /*<-----    Task handles    ----->*/
 
 extern TaskHandle_t samsCerealTaskHandle;
 extern TaskHandle_t motorTaskHandle;
+extern TaskHandle_t currentTaskHandle;
 
 
 
@@ -19,6 +21,7 @@ extern TaskHandle_t motorTaskHandle;
 
 #define SAMS_CEREAL_FREQ 50
 #define MOTOR_TASK_FREQ 50
+#define CURRENT_TASK_FREQ 1
 
 
 
@@ -26,6 +29,7 @@ extern TaskHandle_t motorTaskHandle;
 
 #define ENABLE_SAMS_CEREAL true
 #define ENABLE_MOTOR true
+#define ENABLE_CURRENT false
 
 /*<-----    Shared variables    ----->*/
 extern volatile int motor_r_val;

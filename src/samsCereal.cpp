@@ -1,6 +1,8 @@
 #include <task.h>
 #define BAUD_RATE 115200
 TaskHandle_t samsCerealTaskHandle = nullptr;
+static constexpr TickType_t LOOP_PERIOD =
+    pdMS_TO_TICKS(1000UL / SAMS_CEREAL_FREQ);   // ticks per iteration
 
 // Takes a single message like "<MOTOR:20>" and outputs the correct message 
 Message parseMessage(String input){
@@ -38,14 +40,12 @@ Message parseMessage(String input){
         output.type = MessageType::MOTOR_L;
         output.motorValue = value.toInt();
         motor_l_val = output.motorValue;
-        String motor_out = "<MOTOR_L:"+ String(motor_l_val) +'>';
-        Serial.println(motor_out);
+        //String motor_out = "<MOTOR_L:"+ String(motor_l_val) +'>';
     }else if (key=="MOTOR_R"){
         output.type = MessageType::MOTOR_R;
         output.motorValue = value.toInt();
         motor_r_val = output.motorValue;
-        String motor_out = "<MOTOR_R:"+ String(motor_r_val) +'>';
-        Serial.println(motor_out);
+        //String motor_out = "<MOTOR_R:"+ String(motor_r_val) +'>';
     }
     else{
         output.type = MessageType::ERROR;
@@ -57,23 +57,23 @@ Message parseMessage(String input){
 
 
 
-void samsCerealTask(void * parameter){
+void samsCerealTask(void *) {
+    Serial.begin(BAUD_RATE);           // host side should match
+    Serial.setTimeout(2);           // 2 ms read timeout
+    TickType_t xLastWakeTime = xTaskGetTickCount();   // initialise once
 
-    Serial.begin(BAUD_RATE);
-    Message incomingMessage;
+    static String rx;
 
-    for(;;){
-        String incoming;
-        if(Serial.available()>0){
-            incoming = Serial.readStringUntil('\n');
-            incomingMessage = parseMessage(incoming);
-            
-            if(incomingMessage.type==MessageType::ERROR){
-                Serial.print("Failed to parse message with code: ");
-                Serial.println(incomingMessage.errorCode);
+    for (;;) {
+        while (Serial.available()) {
+            char c = Serial.read();
+            if (c == '\n') {
+                parseMessage(rx);
+                rx = "";
+            } else if (isPrintable(c) && rx.length() < 64) {
+                rx += c;
             }
         }
-        vTaskDelay((1000/SAMS_CEREAL_FREQ) / portTICK_PERIOD_MS);
+        xTaskDelayUntil(&xLastWakeTime, LOOP_PERIOD);
     }
 }
-
