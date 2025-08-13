@@ -36,7 +36,7 @@ void setup(){
       );
     #endif
 
-    Wire.begin(SDA, SCL,20000);
+    Wire.begin(SDA, SCL,100000);
 }
 
 void loop(){

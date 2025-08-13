@@ -6,6 +6,9 @@ Adafruit_ADS1115 ads;
 TaskHandle_t currentTaskHandle = nullptr;
 SemaphoreHandle_t i2c_mutex;
 
+volatile float current_l;
+volatile float current_r;
+
 void TCA9548A(uint8_t bus){
   Wire.beginTransmission(0x70);  // TCA9548A address is 0x70
   Wire.write(1 << bus);          // send byte to select bus
@@ -23,9 +26,11 @@ void readADC()
         float volts0 = ads.computeVolts(adc0);
         float volts1 = ads.computeVolts(adc1);
 
-        Serial.println("-----------------------------------------------------------");
-        Serial.printf("AIN0: %d  %.2fV\n", adc0, volts0);
-        Serial.printf("AIN1: %d  %.2fV\n", adc1, volts1);
+        current_l = max(0.0,(volts0-1.5)*15);
+        current_r = max(0.0,(volts1-1.5)*15);
+
+        Serial.printf("<AIN0: %.2f>\n", current_l);
+        Serial.printf("<AIN1: %.2f>\n",  current_r);
 
         xSemaphoreGive(i2c_mutex);
     }

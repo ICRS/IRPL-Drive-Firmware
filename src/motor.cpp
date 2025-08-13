@@ -8,19 +8,19 @@ void setMotorR(int speed)
     
   if (speed > 0)
   {
-    analogWrite(EN_R,speed);
+    analogWrite(PWM_R,speed);
     digitalWrite(IN1_R, 0);
-    digitalWrite(IN2_R, 1);
+    digitalWrite(EN_R, 1);
   }
   else if (speed <0)
   {
-    analogWrite(EN_R,-speed);
+    analogWrite(PWM_R,-speed);
     digitalWrite(IN1_R, 1);
-    digitalWrite(IN2_R, 0);
+    digitalWrite(EN_R, 0);
   }
   else{
     digitalWrite(IN1_R, 1);
-    digitalWrite(IN2_R, 1);
+    digitalWrite(EN_R, 1);
   }
 }
 
@@ -28,19 +28,19 @@ void setMotorL(int speed)
 {
   if (speed > 0)
   {
-    analogWrite(EN_L,speed);
+    analogWrite(PWM_L,speed);
     digitalWrite(IN1_L, 0);
-    digitalWrite(IN2_L, 1);
+    digitalWrite(EN_L, 1);
   }
   else if (speed <0)
   { 
-    analogWrite(EN_L,-speed);
+    analogWrite(PWM_L,-speed);
     digitalWrite(IN1_L, 1);
-    digitalWrite(IN2_L, 0);
+    digitalWrite(EN_L, 0);
   }
   else{
     digitalWrite(IN1_L, 1);
-    digitalWrite(IN2_L, 1);
+    digitalWrite(EN_L, 1);
   }
 }
 
@@ -49,11 +49,11 @@ void setMotorL(int speed)
 void motorTask(void *parameter)
 {
     pinMode(IN1_L,OUTPUT);
-    pinMode(IN2_L,OUTPUT);
-    pinMode(IN1_R,OUTPUT);
-    pinMode(IN2_R,OUTPUT);
-    pinMode(EN_R,OUTPUT);
     pinMode(EN_L,OUTPUT);
+    pinMode(IN1_R,OUTPUT); 
+    pinMode(EN_R,OUTPUT);
+    pinMode(PWM_R,OUTPUT);
+    pinMode(PWM_L,OUTPUT);
 
     for (;;)
     {
