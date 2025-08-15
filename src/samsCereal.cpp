@@ -1,76 +1,119 @@
 #include <task.h>
-#define BAUD_RATE 115200
-TaskHandle_t samsCerealTaskHandle = nullptr;
-static constexpr TickType_t LOOP_PERIOD =
-    pdMS_TO_TICKS(1000UL / SAMS_CEREAL_FREQ);   // ticks per iteration
 
-// Takes a single message like "<MOTOR:20>" and outputs the correct message 
-Message parseMessage(String input){
-    Message output;
-    String key;
-    String value;
+
+TaskHandle_t samsCerealTaskHandle = nullptr;
+
+
+/* Takes a single message like "<MOTOR:20>" and sends it where it needs to go */
+status_t parseMessage(String input) {
+
+    status_t status = STATUS_OK;
+    String   key;
+    String   value;
+    uint8_t  colonIndex;
+
+    /* Check the message format is valid */
     if (input.startsWith("<") && input.endsWith(">")) {
         input = input.substring(1, input.length() - 1);
-    } else {
-        output.type = MessageType::ERROR;
-        output.errorCode = 0; // Not a samsCereal message 
-        return output;  
     }
 
-    int colonIndex = input.indexOf(':');
-    
-    if (colonIndex!=-1){
-        key = input.substring(0,colonIndex);
-        value = input.substring(colonIndex+1);
-        value.toLowerCase();
-        key.toUpperCase();
-    } else {
-        output.type = MessageType::ERROR;
-        output.errorCode = 1; // No key-value pair
-        return output;  
+    /* Message invalid */
+    else {
+        status = STATUS_INVALID;
+        Serial.println("Message did not begin and end with <>");
+        return status;
     }
 
-    // Big if else to sort message types (change to switch case with enums at some point)
-    if (key=="PING"){
-        output.type = MessageType::PING_IN;
-        output.pingValue = (value=="true");
-        String ping_out = "<PONG:"+ String(output.pingValue) +'>';
-        Serial.println(ping_out);
-    }else if (key=="MOTOR_L"){
-        output.type = MessageType::MOTOR_L;
-        output.motorValue = value.toInt();
-        motor_l_val = output.motorValue;
-        //String motor_out = "<MOTOR_L:"+ String(motor_l_val) +'>';
-    }else if (key=="MOTOR_R"){
-        output.type = MessageType::MOTOR_R;
-        output.motorValue = value.toInt();
-        motor_r_val = output.motorValue;
-        //String motor_out = "<MOTOR_R:"+ String(motor_r_val) +'>';
-    }
-    else{
-        output.type = MessageType::ERROR;
-        output.errorCode = 3; // Unknown key
+    /* Get the key-value separator index */
+    colonIndex = input.indexOf(':');
+    if (colonIndex == -1) {
+        status = STATUS_INVALID;
+        return status;
     }
 
-    return output;
+    /* Extract the key and value */
+    key   = input.substring(0, colonIndex);
+    value = input.substring(colonIndex + 1);
+    value.toLowerCase();
+    key.toUpperCase();
+
+    /* Respond to a ping message with pong */
+    if (key == MSG_PING) {
+        Serial.println("<PONG:1>");
+        return status;
+    }
+
+    /* Otherwise the message is about motion */
+
+    /* Ignore message while calibrating */
+    if (calibrating) {
+        status = STATUS_BUSY;
+        Serial.println("Message ignored due to calibration");
+        return status;
+    }
+
+    /* Take the mutex before updating the shared struct (also acts as a memory barrier so volatile isn't needed) */
+    if (xSemaphoreTake(motion_target.mutex, pdMS_TO_TICKS(1000)) != pdTRUE) {
+        status = STATUS_ERROR;
+        return status;
+    }
+
+    /* New linear speed */
+    if (key == MSG_LINEAR) {
+        motion_target.linear_velocity = constrain(value.toInt(), -255, 255);
+    }
+
+    /* New angular speed */
+    else if (key == MSG_ANGULAR) {
+        motion_target.angular_velocity = constrain(value.toInt(), -255, 255);
+    }
+
+    /* Invalid type */
+    else {
+        status = STATUS_INVALID;
+    }
+
+    /* Update the timestamp (this is so that commands can be timed out for safety) */
+    if (status == STATUS_OK) motion_target.timestamp = xTaskGetTickCount();
+
+    /* Release the mutex */
+    if (xSemaphoreGive(motion_target.mutex) != pdTRUE) status = STATUS_ERROR;
+
+    return status;
 }
 
 
-
 void samsCerealTask(void *) {
-    Serial.begin(BAUD_RATE);           // host side should match
-    Serial.setTimeout(2);           // 2 ms read timeout
-    TickType_t xLastWakeTime = xTaskGetTickCount();   // initialise once
 
+    status_t status = STATUS_OK;
+
+    /* Set timing parameters */
+    TickType_t        xLastWakeTime = xTaskGetTickCount();
+    static TickType_t LOOP_PERIOD   = pdMS_TO_TICKS(1000 / SAMS_CEREAL_FREQ);
+
+    /* Create the message variables */
     static String rx;
+    char          c;
 
     for (;;) {
+
+        /* New message */
         while (Serial.available()) {
-            char c = Serial.read();
+
+            /* Read a new character */
+            c = Serial.read();
+
+            /* If the character denotes the end of a message then parse the message */
             if (c == '\n') {
-                parseMessage(rx);
+                status = parseMessage(rx);
+                if (status != STATUS_OK) {
+                    Serial.println("Error while parsing message");
+                }
                 rx = "";
-            } else if (isPrintable(c) && rx.length() < 64) {
+            }
+
+            /* Otherwise continue accumulating characters */
+            else if (isPrintable(c) && rx.length() < 64) {
                 rx += c;
             }
         }
