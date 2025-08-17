@@ -161,6 +161,12 @@ void motorTask(void *parameter) {
         /* Apply an overcurrent correction */
         apply_overcurrent_correction(&left, &right);
 
+#if INVERT_LEFT == true
+        left = -left;
+#endif
+#if INVERT_RIGHT == true
+        right = -right;
+#endif
 
         /* Write the motor speeds */
         setMotorL(left);

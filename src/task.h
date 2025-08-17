@@ -24,6 +24,9 @@
 #define MAXIMUM_SPEED                    255 /* 0 to 255 */
 #define PRINT_SPEEDS                     true
 #define INVERT_TURN                      false
+#define INVERT_LEFT                      false
+#define INVERT_LEFT                      false
+#define INVERT_RIGHT                     true
 
 #define CURRENT_SENSOR_SUPPLY_VOLTAGE    5.0f
 #define CURRENT_MAX_VOLTAGE              3.3112583f                      /* Due to CURRENT_SENSOR_SUPPLY_VOLTAGE through a 5.1k, 10k potential divider */
