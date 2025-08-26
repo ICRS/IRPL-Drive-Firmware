@@ -7,6 +7,7 @@ Adafruit_ADS1115  ads;
 TaskHandle_t      currentTaskHandle = nullptr;
 SemaphoreHandle_t i2c_mutex;
 
+volatile uint32_t current_limit = CURRENT_LIMIT_DEFAULT;
 volatile bool overcurrent = false; /* This flag is set when either side experiences an overcurrent error */
 volatile bool calibrating = false; /* This flag is set during current calibration to make sure the speed is 0 */
 
@@ -104,7 +105,7 @@ void currentTask(void *parameter) {
         readADC(callibrations, currents);
 
         /* Set the overcurrent flag */
-        if ((abs(currents[0]) > OVERCURRENT_THRESHOLD) || (abs(currents[1]) > OVERCURRENT_THRESHOLD)) {
+        if ((abs(currents[0]) > current_limit) || (abs(currents[1]) > current_limit)) {
             overcurrent = true;
         } else {
             overcurrent = false;

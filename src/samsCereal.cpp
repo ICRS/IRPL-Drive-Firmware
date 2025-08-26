@@ -43,6 +43,12 @@ status_t parseMessage(String input) {
         return status;
     }
 
+    /* Set the current limit */
+    if (key == MSG_I_LIMIT){
+        current_limit = constrain(value.toInt(), 0, 18000);
+        return status;
+    }
+
     /* Otherwise the message is about motion */
 
     /* Ignore message while calibrating */

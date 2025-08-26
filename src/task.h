@@ -19,6 +19,7 @@
 #define MSG_PING                         "PING"
 #define MSG_LINEAR                       "LINEAR"
 #define MSG_ANGULAR                      "ANGULAR"
+#define MSG_I_LIMIT                      "I_LIMIT"
 
 #define MOTION_TARGET_TIMEOUT            500 /* ms, if a message isn't received for this amount of time then stop moving */
 #define MAXIMUM_SPEED                    255 /* 0 to 255 */
@@ -31,7 +32,7 @@
 #define CURRENT_SENSOR_SUPPLY_VOLTAGE    5.0f
 #define CURRENT_MAX_VOLTAGE              3.3112583f                      /* Due to CURRENT_SENSOR_SUPPLY_VOLTAGE through a 5.1k, 10k potential divider */
 #define CURRENT_SENSOR_SENSITIVITY       0.0001f                         /* V/mA  = 100 mV/A */
-#define OVERCURRENT_THRESHOLD            10000                           /* mA, if the current for either side is greater than this the overcurrent flag will be triggered */
+#define CURRENT_LIMIT_DEFAULT            10000                           /* mA, if the current for either side is greater than this the overcurrent flag will be triggered */
 #define OVERCURRENT_CORRECTION_DEFAULT   50                              /* 0 to 255, the minimum ammount to reduce the wheel speeds by when an overcurrent condition is detected. Default is 50 */
 #define OVERCURRENT_CORRECTION_INCREMENT ((1000 / MOTOR_TASK_FREQ) / 10) /* 0 to 255, how fast the speed is reduced to 0 in case of a prolonged overcurrent. t = (255 - OVERCURRENT_CORRECTION_DEFAULT) / (MOTOR_TASK_FREQ * OVERCURRENT_CORRECTION_INCREMENT). Default is 2 which will stop after 2.05 seconds */
 
@@ -80,6 +81,7 @@ extern TaskHandle_t currentTaskHandle;
 #define ENABLE_CURRENT     true
 
 /*<-----    Shared variables    ----->*/
+extern volatile uint32_t current_limit;
 extern volatile bool overcurrent;
 extern volatile bool calibrating;
 
