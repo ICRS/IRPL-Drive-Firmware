@@ -37,9 +37,9 @@ status_t parseMessage(String input) {
     value.toLowerCase();
     key.toUpperCase();
 
-    /* Respond to a ping message with pong */
+    /* Respond to a ping message with pong and the device ID */
     if (key == MSG_PING) {
-        Serial.println("<PONG:1>");
+        Serial.println("<PONG:69>");
         return status;
     }
 
