@@ -43,31 +43,33 @@ static void apply_overcurrent_correction(int16_t *left, int16_t *right) {
 
 void setMotorR(int speed) {
     if (speed > 0) {
+        digitalWrite(IN1_R, 1);
+        digitalWrite(IN2_R, 0);
         analogWrite(PWM_R, speed);
-        digitalWrite(IN1_R, 0);
-        digitalWrite(EN_R, 1);
     } else if (speed < 0) {
+        digitalWrite(IN1_R, 0);
+        digitalWrite(IN2_R, 1);
         analogWrite(PWM_R, -speed);
-        digitalWrite(IN1_R, 1);
-        digitalWrite(EN_R, 0);
     } else {
-        digitalWrite(IN1_R, 1);
-        digitalWrite(EN_R, 1);
+        analogWrite(PWM_R, 0);
+        digitalWrite(IN1_R, 0);
+        digitalWrite(IN2_R, 0);
     }
 }
 
 void setMotorL(int speed) {
     if (speed > 0) {
+        digitalWrite(IN1_L, 1);
+        digitalWrite(IN2_L, 0);
         analogWrite(PWM_L, speed);
-        digitalWrite(IN1_L, 0);
-        digitalWrite(EN_L, 1);
     } else if (speed < 0) {
+        digitalWrite(IN1_L, 0);
+        digitalWrite(IN2_L, 1);
         analogWrite(PWM_L, -speed);
-        digitalWrite(IN1_L, 1);
-        digitalWrite(EN_L, 0);
     } else {
-        digitalWrite(IN1_L, 1);
-        digitalWrite(EN_L, 1);
+        analogWrite(PWM_L, 0);
+        digitalWrite(IN1_L, 0);
+        digitalWrite(IN2_L, 0);
     }
 }
 
@@ -78,9 +80,9 @@ void motorTask(void *parameter) {
 
     /* Setup pins */
     pinMode(IN1_L, OUTPUT);
-    pinMode(EN_L, OUTPUT);
+    pinMode(IN2_L, OUTPUT);
     pinMode(IN1_R, OUTPUT);
-    pinMode(EN_R, OUTPUT);
+    pinMode(IN2_R, OUTPUT);
     pinMode(PWM_R, OUTPUT);
     pinMode(PWM_L, OUTPUT);
 
